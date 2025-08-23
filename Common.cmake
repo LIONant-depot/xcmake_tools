@@ -94,44 +94,56 @@ endfunction()
 #------------------------------------------------------------------------------
 # Function: DefineInterfaceComponent
 # Purpose: Defines an interface library for a component, setting up include directories and global
-# properties for files and groups. Returns TRUE if the library is newly created, FALSE if it already exists.
+# properties for files and groups only if the target is newly created. Returns TRUE if the library
+# is newly created, FALSE if it already exists (to respect external configurations).
 # Parameters:
 # - COMP_NAME: Name of the component (e.g., xresource_pipeline_v2).
+# - GROUP: IDE group name for organizing files (required, e.g., "external dependencies/xresource_pipeline").
 # - ARGN: List of source files for the component.
 # Returns: Sets ${COMP_NAME}_CREATED to TRUE/FALSE in parent scope.
 # Usage:
-#   DefineInterfaceComponent(xresource_pipeline_v2 "source/xresource_pipeline.h" ...)
+#   DefineInterfaceComponent(xresource_pipeline_v2 "dependencies/xresource_pipeline" "source/xresource_pipeline.h" ...)
 #   if(xresource_pipeline_v2_CREATED)
 #     message(STATUS "xresource_pipeline_v2 was created")
 #   endif()
+# Error Handling:
+# - Raises a FATAL_ERROR if GROUP is not provided, with guidance to specify a meaningful IDE group name.
 #------------------------------------------------------------------------------
-function(DefineInterfaceComponent COMP_NAME)
+function(DefineInterfaceComponent COMP_NAME GROUP)
+  set(options)
+  set(oneValueArgs)
+  set(multiValueArgs)
+  cmake_parse_arguments(DIC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  
+  # Ensure GROUP is provided
+  if(NOT GROUP)
+    message(FATAL_ERROR "GROUP parameter is required for DefineInterfaceComponent(${COMP_NAME}). "
+                        "Specify a meaningful IDE group name (e.g., '${COMP_NAME}' or a custom name like 'my_group'). "
+                        "This organizes source files in the IDE (e.g., Visual Studio). Example: "
+                        "DefineInterfaceComponent(${COMP_NAME} \"${COMP_NAME}\" <file_list>)")
+  endif()
+  
   set(CREATED FALSE)
   if(NOT TARGET ${COMP_NAME})
     set(CREATED TRUE)
-
-    # Create interface library
-    add_library(${COMP_NAME} INTERFACE)  
+    add_library(${COMP_NAME} INTERFACE)  # Create interface library
 
     # Set root path: "." for unit tests, "dependencies/<comp_name>" otherwise
     if("${TARGET_PROJECT}" STREQUAL "${COMP_NAME}_unit_test")
       set(ROOT ".")
     else()
       set(ROOT "dependencies/${COMP_NAME}")
+      target_include_directories(${COMP_NAME} INTERFACE "${ROOT}")
     endif()
 
-    target_include_directories(${COMP_NAME} INTERFACE "${ROOT}")
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_GROUP "${ROOT}")              # Store group for IDE organization
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")           # Store include paths
+    # Set properties and files only for newly created targets
+    set_property(GLOBAL PROPERTY ${COMP_NAME}_GROUP "${GROUP}")  # Store group for IDE organization
+    set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")  # Store include paths
     set_property(GLOBAL APPEND PROPERTY COMPONENT_REGISTRY "${COMP_NAME}")  # Register component
+    set(FILES ${DIC_UNPARSED_ARGUMENTS})
+    set_property(GLOBAL APPEND PROPERTY ${COMP_NAME}_FILES ${FILES})  # Store files
   endif()
-
-  # Append source files (passed as ARGN)
-  set(FILES ${ARGN})
-
-  # Store files
-  set_property(GLOBAL APPEND PROPERTY ${COMP_NAME}_FILES ${FILES})  
-
+  
   # Return whether the library was created
   set(${COMP_NAME}_CREATED ${CREATED} PARENT_SCOPE)
 endfunction()
