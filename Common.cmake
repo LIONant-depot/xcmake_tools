@@ -52,47 +52,57 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limit to Debug and R
 
 #------------------------------------------------------------------------------
 # Function: FetchAndPopulate
-# Purpose: Fetches and populates an external dependency using FetchContent, checking for CMakeLists.txt
-# before adding it as a subdirectory. Returns TRUE if the dependency is freshly populated, FALSE if already populated.
+# Purpose: Fetches a dependency using FetchContent, checks for CMakeLists.txt, adds subdirectory.
 # Parameters:
-# - DEP_NAME: Name of the dependency (e.g., xtextfile, xcmdline).
-# Returns: Sets ${DEP_NAME}_POPULATED to TRUE/FALSE in parent scope.
+# - REPO: Full repository URL (required).
+# - TAG (optional): Git tag (defaults to "main").
+# Returns: Sets ${DEP_NAME}_POPULATED to TRUE/FALSE.
 # Usage:
-#   FetchAndPopulate(xtextfile)
-#   if(xtextfile_POPULATED)
-#     message(STATUS "xtextfile was populated")
+#   FetchAndPopulate("https://github.com/LIONant-depot/xtextfile.git")
+#   FetchAndPopulate("https://git.example.com/xcmdline.git" "release")
+#   if(xcmdline_POPULATED)
+#     message(STATUS "xcmdline was populated")
 #   endif()
 #------------------------------------------------------------------------------
-function(FetchAndPopulate DEP_NAME)
-
-  set(REPO "https://github.com/LIONant-depot/${DEP_NAME}.git")  # Repository URL
-  set(TAG "main")                                               # Git tag to fetch
-
+function(FetchAndPopulate REPO)
+  set(options)
+  set(oneValueArgs TAG)
+  set(multiValueArgs)
+  cmake_parse_arguments(FP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  
+  get_filename_component(DEP_BASENAME "${REPO}" NAME)
+  string(REGEX REPLACE "\\.git$" "" DEP_NAME "${DEP_BASENAME}")
+  
+  if(NOT DEP_NAME)
+    message(FATAL_ERROR "Could not extract dependency name from REPO: ${REPO}")
+  endif()
+  
+  if(NOT FP_TAG)
+    set(FP_TAG "main")
+  endif()
+  
   FetchContent_Declare(
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
-    GIT_TAG ${TAG}
-    GIT_SHALLOW TRUE                                            # Shallow clone for efficiency
-    SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"   # Store in dependencies/<dep_name>
+    GIT_TAG ${FP_TAG}
+    GIT_SHALLOW TRUE  # Shallow clone for efficiency
+    SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"
   )
 
   FetchContent_GetProperties(${DEP_NAME})
   if(NOT ${DEP_NAME}_POPULATED)
-    message(STATUS "Populating ${DEP_NAME}...")
+    message(STATUS "Populating ${DEP_NAME} from ${REPO} with tag ${FP_TAG}...")
     FetchContent_Populate(${DEP_NAME})
 
-    # Check for CMakeLists.txt to avoid errors if subdirectory is missing it
     set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
     if(EXISTS "${SUBDIR}/CMakeLists.txt")
       add_subdirectory("${SUBDIR}" "${CMAKE_CURRENT_BINARY_DIR}/${DEP_NAME}")
     endif()
 
-    # Return TRUE to indicate the dependency was populated
     set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)
 
   else()
   
-    # Return FALSE to indicate the dependency was already populated
     set(${DEP_NAME}_POPULATED FALSE PARENT_SCOPE)
   endif()
 endfunction()
