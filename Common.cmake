@@ -34,9 +34,14 @@ if(POLICY CMP0169)
 endif()
 
 if(MSVC)
-  # Enable Unicode support and UTF-8 encoding for MSVC builds
   add_definitions(-DUNICODE -D_UNICODE)
-  add_compile_options(/utf-8)
+  
+  # Set Visual Studio startup project to ${TARGET_PROJECT}
+  if(NOT TARGET_PROJECT)
+    message(FATAL_ERROR "TARGET_PROJECT must be defined before including Common.cmake to set VS_STARTUP_PROJECT. "
+                        "Example: set(TARGET_PROJECT \"my_project\")")
+  endif()
+  set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_PROJECT})
 endif()
 
 set(CMAKE_CXX_STANDARD 20)              # Require C++20
