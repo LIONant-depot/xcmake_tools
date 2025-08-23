@@ -89,8 +89,10 @@ function(FetchAndPopulate REPO)
     message(FATAL_ERROR "Could not extract dependency name from REPO: ${REPO}")
   endif()
   
-  # Use provided TAG or default to "main"
-  if(NOT FP_TAG)
+   # Parse arguments: TAG is optional positional argument
+  if("${ARGC}" GREATER 1)
+    set(FP_TAG "${ARGV1}")
+  else()
     set(FP_TAG "main")
   endif()
   
