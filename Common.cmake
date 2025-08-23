@@ -76,9 +76,9 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limit to Debug and R
 #     message(STATUS "xcmdline was populated")
 #   endif()
 #------------------------------------------------------------------------------
-function(FetchAndPopulate REPO)
+function(FetchAndPopulate REPO TAG)
   set(options)
-  set(oneValueArgs TAG)
+  set(oneValueArgs)
   set(multiValueArgs)
   cmake_parse_arguments(FP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   
@@ -90,9 +90,10 @@ function(FetchAndPopulate REPO)
   endif()
   
   # Use provided TAG or default to "main"
-  set(FP_TAG "${FP_TAG}")
-  if(NOT FP_TAG)
+  if(NOT TAG)
     set(FP_TAG "main")
+  else()
+    set(FP_TAG "${TAG}")
   endif()
   
   FetchContent_Declare(
