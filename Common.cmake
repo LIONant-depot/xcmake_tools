@@ -1,26 +1,38 @@
 # Common.cmake
 #
-# Purpose:
-# This file centralizes shared CMake logic for projects with a main executable (e.g., unit tests)
-# and dependencies managed as interface libraries. It provides reusable functions to:
-# - Fetch and populate external dependencies using FetchContent.
-# - Define interface libraries for components with source files and includes.
-# - Process components to link them to the main executable.
-# It is designed to reduce boilerplate, prevent errors, and improve maintainability.
+# Purpose: Centralizes CMake logic for projects with a main executable and dependencies as interface libraries.
+# Hosted in https://github.com/LIONant-depot/xcmake_tools.git to avoid duplication.
+# Functions: Fetch dependencies, define components, process components.
+# Sets Visual Studio startup project to ${TARGET_PROJECT}.
 #
 # Usage:
-# - Place this file in Build/Dependency/.
-# - In Project/CMakeLists.txt (main), include with: include(${CMAKE_SOURCE_DIR}/Build/Dependency/Common.cmake)
-# - In Build/Dependency/CMakeLists.txt (sub), include with: include(Common.cmake)
-# - Call FetchAndPopulate(<dep_name>) to fetch dependencies.
-# - Call DefineInterfaceComponent(<comp_name> <file_list>) to define components.
-# - Call ProcessComponents(<target>) in the main CMake to link components to the executable.
+# - Host in xcmake_tools Git repository, main branch.
+# - In Project/CMakeLists.txt:
+#     include(FetchContent)
+#     FetchContent_Declare(
+#       xcmake_tools
+#       GIT_REPOSITORY https://github.com/LIONant-depot/xcmake_tools.git
+#       GIT_TAG main
+#       GIT_SHALLOW TRUE
+#       SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/xcmake_tools"
+#     )
+#     FetchContent_MakeAvailable(xcmake_tools)
+#     include(${CMAKE_BINARY_DIR}/_deps/xcmake_tools/Common.cmake)
+# - In Build/Dependency/CMakeLists.txt: include(${CMAKE_BINARY_DIR}/_deps/xcmake_tools/Common.cmake)
+# - Call FetchAndPopulate(<repo> [<tag>]) for dependencies.
+# - Call DefineInterfaceComponent(<comp_name> <group> <file_list>) for components.
+# - Call ProcessComponents() to link components (defaults to ${TARGET_PROJECT}).
+# - Override startup project with set_property(DIRECTORY ... VS_STARTUP_PROJECT <target>) if needed.
+# - For breaking changes, rename to Common2.cmake and update include paths.
 #
 # Notes:
-# - Assumes dependencies are hosted at https://github.com/LIONant-depot/<dep_name>.git with tag "main".
-# - Uses global properties to track component metadata (files, includes, groups).
-# - Functions return values (TRUE/FALSE) for conditional logic (e.g., if(<dep>_POPULATED)).
-# - Checks for CMakeLists.txt existence to avoid errors in add_subdirectory.
+# - FetchAndPopulate requires a full repository URL; default tag is "main".
+# - DefineInterfaceComponent requires GROUP; appends /<comp_name> to form IDE group; raises FATAL_ERROR if omitted.
+# - ProcessComponents defaults to ${TARGET_PROJECT}; raises FATAL_ERROR if undefined.
+# - Sets VS_STARTUP_PROJECT for MSVC; requires ${TARGET_PROJECT}.
+# - Uses global properties for component metadata.
+# - Checks for CMakeLists.txt to avoid add_subdirectory errors.
+# - Only sets properties/files for new targets.
 
 cmake_minimum_required(VERSION 3.10)
 include(FetchContent)
@@ -109,21 +121,17 @@ endfunction()
 
 #------------------------------------------------------------------------------
 # Function: DefineInterfaceComponent
-# Purpose: Defines an interface library for a component, setting up include directories and global
-# properties for files and groups only if the target is newly created. Returns TRUE if the library
-# is newly created, FALSE if it already exists (to respect external configurations).
+# Purpose: Defines an interface library, sets include directories and properties only if new.
 # Parameters:
-# - COMP_NAME: Name of the component (e.g., xresource_pipeline_v2).
-# - GROUP: IDE group name for organizing files (required, e.g., "external dependencies/xresource_pipeline").
-# - ARGN: List of source files for the component.
-# Returns: Sets ${COMP_NAME}_CREATED to TRUE/FALSE in parent scope.
+# - COMP_NAME: Component name (e.g., xresource_pipeline_v2).
+# - GROUP: Parent folder for IDE group (required, e.g., "dependencies/xcore"); /<comp_name> is appended.
+# - ARGN: Source files, relative to component root.
+# Returns: Sets ${COMP_NAME}_CREATED to TRUE/FALSE.
 # Usage:
-#   DefineInterfaceComponent(xresource_pipeline_v2 "dependencies/xresource_pipeline" "source/xresource_pipeline.h" ...)
+#   DefineInterfaceComponent(xresource_pipeline_v2 "dependencies/xcore" "source/xresource_pipeline.h" ...)
 #   if(xresource_pipeline_v2_CREATED)
 #     message(STATUS "xresource_pipeline_v2 was created")
 #   endif()
-# Error Handling:
-# - Raises a FATAL_ERROR if GROUP is not provided, with guidance to specify a meaningful IDE group name.
 #------------------------------------------------------------------------------
 function(DefineInterfaceComponent COMP_NAME GROUP)
   set(options)
