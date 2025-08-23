@@ -229,3 +229,16 @@ function(ProcessComponents)
     endif()
   endforeach()
 endfunction()
+
+# Function: AppendComponentIncludes
+# Purpose: Appends additional include directories to a component's ${COMP_NAME}_INCLUDES property.
+# Parameters:
+# - COMP_NAME: Component name (e.g., xcompression).
+# - ARGN: List of include directories to append.
+# Usage:
+#   AppendComponentIncludes(xcompression "${CMAKE_SOURCE_DIR}/dependencies/zstd")
+function(AppendComponentIncludes COMP_NAME)
+  get_property(CURRENT_INCLUDES GLOBAL PROPERTY ${COMP_NAME}_INCLUDES)
+  list(APPEND CURRENT_INCLUDES ${ARGN})
+  set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${CURRENT_INCLUDES}")
+endfunction()
