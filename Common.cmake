@@ -102,7 +102,7 @@ function(FetchAndPopulate REPO)
     set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)
 
   else()
-  
+
     set(${DEP_NAME}_POPULATED FALSE PARENT_SCOPE)
   endif()
 endfunction()
@@ -157,7 +157,14 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
     set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")  # Store include paths
     set_property(GLOBAL APPEND PROPERTY COMPONENT_REGISTRY "${COMP_NAME}")  # Register component
     set(FILES ${DIC_UNPARSED_ARGUMENTS})
-    set_property(GLOBAL APPEND PROPERTY ${COMP_NAME}_FILES ${FILES})  # Store files
+
+    # Prepend ROOT to file paths
+    set(FILES "")
+    foreach(FILE ${DIC_UNPARSED_ARGUMENTS})
+      list(APPEND FILES "${ROOT}/${FILE}")
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY ${COMP_NAME}_FILES ${FILES})
   endif()
   
   # Return whether the library was created
