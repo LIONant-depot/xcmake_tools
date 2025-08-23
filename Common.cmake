@@ -152,9 +152,12 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
       target_include_directories(${COMP_NAME} INTERFACE "${ROOT}")
     endif()
 
+    # Append /COMP_NAME to GROUP for IDE organization
+    set(GROUP_NAME "${GROUP}/${COMP_NAME}")
+
     # Set properties and files only for newly created targets
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_GROUP "${GROUP}")  # Store group for IDE organization
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")  # Store include paths
+    set_property(GLOBAL PROPERTY ${COMP_NAME}_GROUP "${GROUP_NAME}")        # Store group for IDE organization
+    set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")           # Store include paths
     set_property(GLOBAL APPEND PROPERTY COMPONENT_REGISTRY "${COMP_NAME}")  # Register component
     set(FILES ${DIC_UNPARSED_ARGUMENTS})
 
