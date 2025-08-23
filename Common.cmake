@@ -156,41 +156,45 @@ endfunction()
 
 #------------------------------------------------------------------------------
 # Function: ProcessComponents
-# Purpose: Links registered components to the main executable by adding their sources, includes,
-# and linker paths. Organizes files in IDE groups for clarity.
+# Purpose: Links components to the main executable, adds sources, includes, linker paths.
 # Parameters:
-# - TARGET: The main executable target (e.g., xproperty_unit_test).
+# - TARGET (optional): Target to link components to (defaults to ${TARGET_PROJECT}).
 # Usage:
-#   ProcessComponents(${TARGET_PROJECT})
+#   ProcessComponents()               # Uses ${TARGET_PROJECT}
+#   ProcessComponents(custom_target)  # Explicit target
 #------------------------------------------------------------------------------
-function(ProcessComponents TARGET)
-
+function(ProcessComponents)
+  set(options)
+  set(oneValueArgs TARGET)
+  set(multiValueArgs)
+  cmake_parse_arguments(PC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  
+  if(NOT PC_TARGET)
+    if(NOT TARGET_PROJECT)
+      message(FATAL_ERROR "TARGET_PROJECT must be defined for ProcessComponents when no TARGET is provided. "
+                          "Example: set(TARGET_PROJECT \"my_project\")")
+    endif()
+    set(PC_TARGET "${TARGET_PROJECT}")
+  endif()
+  
   get_property(REG GLOBAL PROPERTY COMPONENT_REGISTRY)
   message(STATUS "Processing: ${REG}")
-
   foreach(COMP ${REG})
-    # Add source files to the target
     get_property(FILES GLOBAL PROPERTY ${COMP}_FILES)
     if(FILES)
-      target_sources(${TARGET} PRIVATE ${FILES})
-      # Organize files in IDE using group property
+      target_sources(${PC_TARGET} PRIVATE ${FILES})
       get_property(GROUP GLOBAL PROPERTY ${COMP}_GROUP)
       if(GROUP)
         source_group("${GROUP}" FILES ${FILES})
       endif()
     endif()
-
-    # Add include directories to the target
     get_property(INCS GLOBAL PROPERTY ${COMP}_INCLUDES)
     if(INCS)
-      target_include_directories(${TARGET} PRIVATE ${INCS})
+      target_include_directories(${PC_TARGET} PRIVATE ${INCS})
     endif()
-
-    # Add linker paths if specified
     get_property(LINK_PATHS GLOBAL PROPERTY ${COMP}_LINKER_PATHS)
     if(LINK_PATHS)
-      target_link_directories(${TARGET} PRIVATE ${LINK_PATHS})
+      target_link_directories(${PC_TARGET} PRIVATE ${LINK_PATHS})
     endif()
-
   endforeach()
 endfunction()
