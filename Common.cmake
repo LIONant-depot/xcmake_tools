@@ -67,6 +67,7 @@ function(FetchAndPopulate DEP_NAME)
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
     GIT_TAG ${TAG}
+    GIT_SHALLOW TRUE                                            # Shallow clone for efficiency
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"   # Store in dependencies/<dep_name>
   )
 
