@@ -229,9 +229,11 @@ function(ProcessComponents)
     endif()
     get_property(LINK_PATHS GLOBAL PROPERTY ${COMP_LOWER}_LINKER_PATHS)
     if(LINK_PATHS)
+      message(STATUS "Applying linker paths for ${COMP}: ${LINK_PATHS}")
       target_link_directories(${PC_TARGET} PRIVATE ${LINK_PATHS})
-    endif()
-  endforeach()
+    else()
+      message(WARNING "No linker paths defined for component ${COMP}.")
+    endif()  endforeach()
 endfunction()
 
 # Function: AppendComponentIncludes
