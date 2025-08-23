@@ -233,7 +233,8 @@ function(ProcessComponents)
       target_link_directories(${PC_TARGET} PRIVATE ${LINK_PATHS})
     else()
       message(WARNING "No linker paths defined for component ${COMP}.")
-    endif()  endforeach()
+    endif()  
+  endforeach()
 endfunction()
 
 # Function: AppendComponentIncludes
