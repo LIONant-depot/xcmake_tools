@@ -288,6 +288,7 @@ function(ProcessComponents)
 
     get_property(INCS GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES)
     if(INCS)
+      message(STATUS "Applying include directories for ${COMP}: ${INCS}")
       target_include_directories(${PC_TARGET} PRIVATE ${INCS})
     endif()
 
