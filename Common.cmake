@@ -67,7 +67,6 @@ set(CMAKE_SUPPRESS_REGENERATION true)   # Skip ZERO_CHECK project in Visual Stud
 set(CMAKE_SKIP_INSTALL_RULES true)      # Disable installation rules
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limit to Debug and Release builds" FORCE)
 
-#------------------------------------------------------------------------------
 # Function: FetchAndPopulate
 # Purpose: Fetches a dependency using FetchContent, checks for CMakeLists.txt, adds subdirectory.
 # Parameters:
@@ -77,7 +76,6 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limit to Debug and R
 # Usage:
 #   FetchAndPopulate("https://github.com/LIONant-depot/xtextfile.git")
 #   FetchAndPopulate("https://git.example.com/xcmdline.git" "release")
-#------------------------------------------------------------------------------
 function(FetchAndPopulate REPO)
   find_package(Git REQUIRED)
   
@@ -97,20 +95,36 @@ function(FetchAndPopulate REPO)
   
   set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
   
-  # Check if the repository already exists and has the correct tag
+  # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
   if(EXISTS "${DEP_SOURCE_DIR}/.git")
+    message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
     execute_process(
-      COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match
+      COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
       WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
       RESULT_VARIABLE GIT_RESULT
-      OUTPUT_VARIABLE CURRENT_TAG
+      OUTPUT_VARIABLE CURRENT_BRANCH
       OUTPUT_STRIP_TRAILING_WHITESPACE
       ERROR_QUIET
     )
-    if(GIT_RESULT EQUAL 0 AND "${CURRENT_TAG}" STREQUAL "${FP_TAG}")
-      set(SHOULD_POPULATE FALSE)
-      message(STATUS "Using existing ${DEP_NAME} at ${DEP_SOURCE_DIR} with tag ${FP_TAG}")
+    if(GIT_RESULT EQUAL 0)
+      if("${CURRENT_BRANCH}" STREQUAL "${FP_TAG}" OR "${FP_TAG}" STREQUAL "master" OR "${FP_TAG}" STREQUAL "main")
+        set(SHOULD_POPULATE FALSE)
+        message(STATUS "Skipping fetch for ${DEP_NAME}: already at ${FP_TAG} or compatible branch")
+      else()
+        execute_process(
+          COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match
+          WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+          RESULT_VARIABLE TAG_RESULT
+          OUTPUT_VARIABLE CURRENT_TAG
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          ERROR_QUIET
+        )
+        if(TAG_RESULT EQUAL 0 AND "${CURRENT_TAG}" STREQUAL "${FP_TAG}")
+          set(SHOULD_POPULATE FALSE)
+          message(STATUS "Skipping fetch for ${DEP_NAME}: tag ${FP_TAG} matches")
+        endif()
+      endif()
     endif()
   endif()
   
@@ -128,17 +142,20 @@ function(FetchAndPopulate REPO)
   if(NOT ${DEP_NAME}_POPULATED AND SHOULD_POPULATE)
     message(STATUS "Populating ${DEP_NAME} from ${REPO} with tag ${FP_TAG}...")
     FetchContent_Populate(${DEP_NAME})
-
     set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
     if(EXISTS "${SUBDIR}/CMakeLists.txt")
       add_subdirectory("${SUBDIR}" "${CMAKE_CURRENT_BINARY_DIR}/${DEP_NAME}")
     else()
       message(WARNING "No CMakeLists.txt in ${SUBDIR}. Skipping add_subdirectory.")
     endif()
-
-    set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)    
+    set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)
   else()
-
+    if(EXISTS "${DEP_SOURCE_DIR}")
+      set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
+      if(EXISTS "${SUBDIR}/CMakeLists.txt")
+        add_subdirectory("${SUBDIR}" "${CMAKE_CURRENT_BINARY_DIR}/${DEP_NAME}")
+      endif()
+    endif()
     set(${DEP_NAME}_POPULATED FALSE PARENT_SCOPE)
   endif()
 endfunction()
