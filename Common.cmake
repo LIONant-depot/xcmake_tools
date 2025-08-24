@@ -190,6 +190,11 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
                         "Example: DefineInterfaceComponent(${COMP_NAME} \"dependencies/xcore\" <file_list>)")
   endif()
   
+  if(TARGET ${COMP_NAME})
+     message(FATAL_ERROR "You define a component the same name as the Target ${COMP_NAME}. This is not allowed. "
+                         "Please change either one other wise this will cause issues.")
+  endif()
+
   set(CREATED FALSE)
   if(NOT TARGET ${COMP_NAME})
     set(CREATED TRUE)
@@ -288,7 +293,7 @@ function(ProcessComponents)
 
     get_property(INCS GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES)
     if(INCS)
-      message(STATUS "Applying include directories for ${COMP}: ${INCS}")
+      # message(STATUS "Applying include directories for ${COMP}: ${INCS}")
       target_include_directories(${PC_TARGET} PRIVATE ${INCS})
     endif()
 
