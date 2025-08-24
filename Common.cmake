@@ -100,7 +100,8 @@ function(FetchAndPopulate REPO)
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
     GIT_TAG ${FP_TAG}
-    GIT_SHALLOW TRUE  # Shallow clone for efficiency
+    GIT_SHALLOW TRUE                # Shallow clone for efficiency
+    GIT_SUBMODULES_RECURSE TRUE     # Grab all the sub modules as well
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"
   )
 
