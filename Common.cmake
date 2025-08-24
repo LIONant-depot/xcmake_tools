@@ -130,13 +130,16 @@ endfunction()
 # Parameters:
 # - COMP_NAME: Component name (e.g., xresource_pipeline_v2).
 # - GROUP: Parent folder for IDE group (required, e.g., "dependencies/xcore"); /<comp_name> is appended.
-# - ARGN: Source files, relative to component root.
+# - ARGN: Source files, relative to component root, with optional **subgroup markers to set IDE subgroups.
 # Returns: Sets ${COMP_NAME}_CREATED to TRUE/FALSE.
 # Usage:
-#   DefineInterfaceComponent(xresource_pipeline_v2 "dependencies/xcore" "source/xresource_pipeline.h" ...)
-#   if(xresource_pipeline_v2_CREATED)
-#     message(STATUS "xresource_pipeline_v2 was created")
-#   endif()
+#   DefineInterfaceComponent(xtexture_compiler "dependencies/xcore"
+#     "source/Compiler/main.cpp"
+#     "**Texture_Compiler/Source Files"
+#     "source/Compiler/xtexture_compiler.cpp"
+#     "**Texture_Compiler/Header Files"
+#     "source/xtexture_rsc_descriptor.h"
+#   )
 #------------------------------------------------------------------------------
 function(DefineInterfaceComponent COMP_NAME GROUP)
   set(options)
@@ -144,46 +147,48 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
   set(multiValueArgs)
   cmake_parse_arguments(DIC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   
-  # Ensure GROUP is provided
   if(NOT GROUP)
-    message(FATAL_ERROR "GROUP parameter is required for DefineInterfaceComponent(${COMP_NAME}). "
-                        "Specify a meaningful IDE group name (e.g., '${COMP_NAME}' or a custom name like 'my_group'). "
-                        "This organizes source files in the IDE (e.g., Visual Studio). Example: "
-                        "DefineInterfaceComponent(${COMP_NAME} \"${COMP_NAME}\" <file_list>)")
+    message(FATAL_ERROR "GROUP parameter required for DefineInterfaceComponent(${COMP_NAME}). "
+                        "Specify a parent folder for the IDE group (e.g., 'dependencies/xcore'). "
+                        "/${COMP_NAME} will be appended (e.g., 'dependencies/xcore/${COMP_NAME}'). "
+                        "Example: DefineInterfaceComponent(${COMP_NAME} \"dependencies/xcore\" <file_list>)")
   endif()
   
   set(CREATED FALSE)
   if(NOT TARGET ${COMP_NAME})
     set(CREATED TRUE)
-    add_library(${COMP_NAME} INTERFACE)  # Create interface library
-
-    # Set root path: "." for unit tests, "dependencies/<comp_name>" otherwise
+    add_library(${COMP_NAME} INTERFACE)
     if("${TARGET_PROJECT}" STREQUAL "${COMP_NAME}_unit_test")
       set(ROOT ".")
     else()
       set(ROOT "dependencies/${COMP_NAME}")
       target_include_directories(${COMP_NAME} INTERFACE "${ROOT}")
     endif()
-
-    # Append /COMP_NAME to GROUP for IDE organization
+    string(TOLOWER "${COMP_NAME}" COMP_LOWER)
     set(GROUP_NAME "${GROUP}/${COMP_NAME}")
-
-    # Set properties and files only for newly created targets
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_GROUP "${GROUP_NAME}")        # Store group for IDE organization
-    set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${ROOT}")           # Store include paths
-    set_property(GLOBAL APPEND PROPERTY COMPONENT_REGISTRY "${COMP_NAME}")  # Register component
-    set(FILES ${DIC_UNPARSED_ARGUMENTS})
-
-    # Prepend ROOT to file paths
+    set_property(GLOBAL PROPERTY ${COMP_LOWER}_GROUP "${GROUP_NAME}")
+    set_property(GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES "${ROOT}")
+    set_property(GLOBAL APPEND PROPERTY COMPONENT_REGISTRY "${COMP_NAME}")
+    
     set(FILES "")
-    foreach(FILE ${DIC_UNPARSED_ARGUMENTS})
-      list(APPEND FILES "${ROOT}/${FILE}")
+    set(FILE_GROUPS "")
+    set(CURRENT_SUBGROUP "")
+    foreach(ITEM ${DIC_UNPARSED_ARGUMENTS})
+      if(ITEM MATCHES "^\\*\\*(.+)$")
+        set(CURRENT_SUBGROUP "${CMAKE_MATCH_1}")
+      else()
+        list(APPEND FILES "${ROOT}/${ITEM}")
+        if(CURRENT_SUBGROUP)
+          list(APPEND FILE_GROUPS "${ROOT}/${ITEM}=${GROUP_NAME}/${CURRENT_SUBGROUP}")
+        endif()
+      endif()
     endforeach()
-
-    set_property(GLOBAL APPEND PROPERTY ${COMP_NAME}_FILES ${FILES})
+    set_property(GLOBAL APPEND PROPERTY ${COMP_LOWER}_FILES ${FILES})
+    if(FILE_GROUPS)
+      set_property(GLOBAL APPEND PROPERTY ${COMP_LOWER}_FILE_GROUPS ${FILE_GROUPS})
+    endif()
   endif()
   
-  # Return whether the library was created
   set(${COMP_NAME}_CREATED ${CREATED} PARENT_SCOPE)
 endfunction()
 
@@ -193,8 +198,8 @@ endfunction()
 # Parameters:
 # - TARGET (optional): Target to link components to (defaults to ${TARGET_PROJECT}).
 # Usage:
-#   ProcessComponents()               # Uses ${TARGET_PROJECT}
-#   ProcessComponents(custom_target)  # Explicit target
+#   ProcessComponents()
+#   ProcessComponents(custom_target)
 #------------------------------------------------------------------------------
 function(ProcessComponents)
   set(options)
@@ -204,7 +209,7 @@ function(ProcessComponents)
   
   if(NOT PC_TARGET)
     if(NOT TARGET_PROJECT)
-      message(FATAL_ERROR "TARGET_PROJECT must be defined for ProcessComponents when no TARGET is provided. "
+      message(FATAL_ERROR "TARGET_PROJECT must be defined for ProcessComponents. "
                           "Example: set(TARGET_PROJECT \"my_project\")")
     endif()
     set(PC_TARGET "${TARGET_PROJECT}")
@@ -212,31 +217,53 @@ function(ProcessComponents)
   
   get_property(REG GLOBAL PROPERTY COMPONENT_REGISTRY)
   message(STATUS "Processing: ${REG}")
+
   foreach(COMP ${REG})
-    # Normalize component name to lowercase for property access
     string(TOLOWER "${COMP}" COMP_LOWER)
+
     get_property(FILES GLOBAL PROPERTY ${COMP_LOWER}_FILES)
     if(FILES)
       target_sources(${PC_TARGET} PRIVATE ${FILES})
+
       get_property(GROUP GLOBAL PROPERTY ${COMP_LOWER}_GROUP)
       if(GROUP)
-        source_group("${GROUP}" FILES ${FILES})
+        # Apply default group for files without subgroups
+        set(UNGROUPED_FILES "${FILES}")
+
+        get_property(FILE_GROUPS GLOBAL PROPERTY ${COMP_LOWER}_FILE_GROUPS)
+        if(FILE_GROUPS)
+          foreach(FILE_GROUP ${FILE_GROUPS})
+            string(REGEX MATCH "^(.+)=(.+)$" MATCH "${FILE_GROUP}")
+            if(MATCH)
+              set(FILE_PATH "${CMAKE_MATCH_1}")
+              set(SUBGROUP "${CMAKE_MATCH_2}")
+              source_group("${SUBGROUP}" FILES "${FILE_PATH}")
+              list(REMOVE_ITEM UNGROUPED_FILES "${FILE_PATH}")
+            endif()
+          endforeach()
+        endif()
+        
+        # Apply default group to remaining files
+        source_group("${GROUP}" FILES ${UNGROUPED_FILES})
       endif()
     else()
       message(WARNING "No files defined for component ${COMP}. Skipping.")
     endif()
+
     get_property(INCS GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES)
     if(INCS)
       target_include_directories(${PC_TARGET} PRIVATE ${INCS})
     endif()
+
     get_property(LINK_PATHS GLOBAL PROPERTY ${COMP_LOWER}_LINKER_PATHS)
     if(LINK_PATHS)
       message(STATUS "Applying linker paths for ${COMP}: ${LINK_PATHS}")
       target_link_directories(${PC_TARGET} PRIVATE ${LINK_PATHS})
-    endif()  
+    endif()
   endforeach()
 endfunction()
 
+#------------------------------------------------------------------------------
 # Function: AppendComponentIncludes
 # Purpose: Appends additional include directories to a component's ${COMP_NAME}_INCLUDES property.
 # Parameters:
@@ -244,8 +271,39 @@ endfunction()
 # - ARGN: List of include directories to append.
 # Usage:
 #   AppendComponentIncludes(xcompression "${CMAKE_SOURCE_DIR}/dependencies/zstd")
+#------------------------------------------------------------------------------
 function(AppendComponentIncludes COMP_NAME)
   get_property(CURRENT_INCLUDES GLOBAL PROPERTY ${COMP_NAME}_INCLUDES)
   list(APPEND CURRENT_INCLUDES ${ARGN})
   set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${CURRENT_INCLUDES}")
+endfunction()
+
+#------------------------------------------------------------------------------
+# Function: SetComponentGroup
+# Purpose: Sets the IDE group for a component's ${COMP_NAME}_GROUP property.
+# Parameters:
+# - COMP_NAME: Component name (e.g., xcompression).
+# - GROUP: IDE group path (e.g., "dependencies/xcore/xcompression").
+# Usage:
+#   SetComponentGroup(xcompression "dependencies/xcore/xcompression")
+#------------------------------------------------------------------------------
+function(SetComponentGroup COMP_NAME GROUP)
+  string(TOLOWER "${COMP_NAME}" COMP_LOWER)
+  set_property(GLOBAL PROPERTY ${COMP_LOWER}_GROUP "${GROUP}")
+endfunction()
+
+#------------------------------------------------------------------------------
+# Function: AppendComponentLinkerPaths
+# Purpose: Appends linker paths to a component's ${COMP_NAME}_LINKER_PATHS property.
+# Parameters:
+# - COMP_NAME: Component name (e.g., xcompression).
+# - ARGN: List of linker paths to append.
+# Usage:
+#   AppendComponentLinkerPaths(xcompression "${CMAKE_SOURCE_DIR}/dependencies/zstd/build-cmake/lib/Release")
+#------------------------------------------------------------------------------
+function(AppendComponentLinkerPaths COMP_NAME)
+  string(TOLOWER "${COMP_NAME}" COMP_LOWER)
+  get_property(CURRENT_LINKER_PATHS GLOBAL PROPERTY ${COMP_LOWER}_LINKER_PATHS)
+  list(APPEND CURRENT_LINKER_PATHS ${ARGN})
+  set_property(GLOBAL PROPERTY ${COMP_LOWER}_LINKER_PATHS "${CURRENT_LINKER_PATHS}")
 endfunction()
