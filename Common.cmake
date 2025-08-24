@@ -191,8 +191,8 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
   endif()
   
   if("${COMP_NAME}" STREQUAL "${TARGET_PROJECT}")
-     message(FATAL_ERROR "You define a component the same name as the Target Project ${COMP_NAME}. This is not allowed. "
-                         "Please change either one other wise this will cause issues.")
+     # This is not allowed as it will cause issues with include paths, linker paths or source files not being applied.
+     message(FATAL_ERROR "You define a component the same name as the Target Project ${COMP_NAME}. This is not allowed so please change either one.")
   endif()
 
   set(CREATED FALSE)
