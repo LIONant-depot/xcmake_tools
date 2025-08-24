@@ -48,11 +48,16 @@ endif()
 if(MSVC)
   add_definitions(-DUNICODE -D_UNICODE)
   
+  # Enable multicore compilation for Visual Studio
+  add_compile_options(/MP)
+
   # Set Visual Studio startup project to ${TARGET_PROJECT}
   if(NOT TARGET_PROJECT)
     message(FATAL_ERROR "TARGET_PROJECT must be defined before including Common.cmake to set VS_STARTUP_PROJECT. "
                         "Example: set(TARGET_PROJECT \"my_project\")")
   endif()
+
+  # Enable the defal project to be the default selected option
   set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${TARGET_PROJECT})
 endif()
 
