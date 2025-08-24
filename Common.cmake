@@ -72,15 +72,16 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limit to Debug and R
 # Usage:
 #   FetchAndPopulate("https://github.com/LIONant-depot/xtextfile.git")
 #   FetchAndPopulate("https://git.example.com/xcmdline.git" "release")
-#   if(xcmdline_POPULATED)
-#     message(STATUS "xcmdline was populated")
-#   endif()
 #------------------------------------------------------------------------------
 function(FetchAndPopulate REPO)
-  set(options)
-  set(oneValueArgs TAG)
-  set(multiValueArgs)
-  cmake_parse_arguments(FP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  find_package(Git REQUIRED)
+  
+  # Parse arguments: TAG is optional positional argument
+  if("${ARGC}" GREATER 1)
+    set(FP_TAG "${ARGV1}")
+  else()
+    set(FP_TAG "main")
+  endif()
   
   get_filename_component(DEP_BASENAME "${REPO}" NAME)
   string(REGEX REPLACE "\\.git$" "" DEP_NAME "${DEP_BASENAME}")
@@ -89,35 +90,48 @@ function(FetchAndPopulate REPO)
     message(FATAL_ERROR "Could not extract dependency name from REPO: ${REPO}")
   endif()
   
-   # Parse arguments: TAG is optional positional argument
-  if("${ARGC}" GREATER 1)
-    set(FP_TAG "${ARGV1}")
-  else()
-    set(FP_TAG "main")
+  set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
+  
+  # Check if the repository already exists and has the correct tag
+  set(SHOULD_POPULATE TRUE)
+  if(EXISTS "${DEP_SOURCE_DIR}/.git")
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match
+      WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+      RESULT_VARIABLE GIT_RESULT
+      OUTPUT_VARIABLE CURRENT_TAG
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+    )
+    if(GIT_RESULT EQUAL 0 AND "${CURRENT_TAG}" STREQUAL "${FP_TAG}")
+      set(SHOULD_POPULATE FALSE)
+      message(STATUS "Using existing ${DEP_NAME} at ${DEP_SOURCE_DIR} with tag ${FP_TAG}")
+    endif()
   endif()
   
   FetchContent_Declare(
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
     GIT_TAG ${FP_TAG}
-    GIT_SHALLOW TRUE                # Shallow clone for efficiency
-    GIT_SUBMODULES_RECURSE TRUE     # Grab all the sub modules as well
-    GIT_CLONE_FLAGS "--jobs=8"      # allow git to fetch up to 8 depots in parallel
-    SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"
+    GIT_SHALLOW TRUE
+    GIT_SUBMODULES_RECURSE TRUE
+    GIT_CLONE_FLAGS "--jobs=8"
+    SOURCE_DIR "${DEP_SOURCE_DIR}"
   )
-
+  
   FetchContent_GetProperties(${DEP_NAME})
-  if(NOT ${DEP_NAME}_POPULATED)
+  if(NOT ${DEP_NAME}_POPULATED AND SHOULD_POPULATE)
     message(STATUS "Populating ${DEP_NAME} from ${REPO} with tag ${FP_TAG}...")
     FetchContent_Populate(${DEP_NAME})
 
     set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
     if(EXISTS "${SUBDIR}/CMakeLists.txt")
       add_subdirectory("${SUBDIR}" "${CMAKE_CURRENT_BINARY_DIR}/${DEP_NAME}")
+    else()
+      message(WARNING "No CMakeLists.txt in ${SUBDIR}. Skipping add_subdirectory.")
     endif()
 
-    set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)
-
+    set(${DEP_NAME}_POPULATED TRUE PARENT_SCOPE)    
   else()
 
     set(${DEP_NAME}_POPULATED FALSE PARENT_SCOPE)
