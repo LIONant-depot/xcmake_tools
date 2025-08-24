@@ -102,6 +102,7 @@ function(FetchAndPopulate REPO)
     GIT_TAG ${FP_TAG}
     GIT_SHALLOW TRUE                # Shallow clone for efficiency
     GIT_SUBMODULES_RECURSE TRUE     # Grab all the sub modules as well
+    GIT_CLONE_FLAGS "--jobs=8"      # allow git to fetch up to 8 depots in parallel
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}"
   )
 
