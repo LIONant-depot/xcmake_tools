@@ -190,7 +190,7 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
                         "Example: DefineInterfaceComponent(${COMP_NAME} \"dependencies/xcore\" <file_list>)")
   endif()
   
-  if(TARGET ${COMP_NAME})
+  if(TARGET STREQUAL ${COMP_NAME})
      message(FATAL_ERROR "You define a component the same name as the Target ${COMP_NAME}. This is not allowed. "
                          "Please change either one other wise this will cause issues.")
   endif()
