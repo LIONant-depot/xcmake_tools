@@ -197,10 +197,11 @@ function(DefineInterfaceComponent COMP_NAME GROUP)
 
   set(CREATED FALSE)
   if(NOT TARGET ${COMP_NAME})
+  
     set(CREATED TRUE)
     add_library(${COMP_NAME} INTERFACE)
-    if("${TARGET_PROJECT}" MATCHES "^${COMP_NAME}.*")
-      message(STATUS "Component '${COMP_NAME}' is a prefix of project '${TARGET_PROJECT}'. Treating as project-specific with ROOT_PATH equal to PROJECT_PATH")
+    if("${TARGET_PROJECT}" MATCHES "^${COMP_NAME}_.*")
+      message(STATUS "Component '${COMP_NAME}_' is a prefix of project '${TARGET_PROJECT}'. Treating as project-specific with ROOT_PATH equal to PROJECT_PATH")
       set(ROOT ".")
     else()
       set(ROOT "dependencies/${COMP_NAME}")
