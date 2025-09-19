@@ -326,9 +326,10 @@ endfunction()
 #   AppendComponentIncludes(xcompression "${CMAKE_SOURCE_DIR}/dependencies/zstd")
 #------------------------------------------------------------------------------
 function(AppendComponentIncludes COMP_NAME)
-  get_property(CURRENT_INCLUDES GLOBAL PROPERTY ${COMP_NAME}_INCLUDES)
+  string(TOLOWER "${COMP_NAME}" COMP_LOWER)
+  get_property(CURRENT_INCLUDES GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES)
   list(APPEND CURRENT_INCLUDES ${ARGN})
-  set_property(GLOBAL PROPERTY ${COMP_NAME}_INCLUDES "${CURRENT_INCLUDES}")
+  set_property(GLOBAL PROPERTY ${COMP_LOWER}_INCLUDES "${CURRENT_INCLUDES}")
 endfunction()
 
 #------------------------------------------------------------------------------
