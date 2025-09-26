@@ -118,24 +118,23 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 message(STATUS "Dep dir: ${DEP_DIR_NATIVE}")
+# Try writing a temp file to verify access
+set(TEMP_FILE "${DEP_DIR_NATIVE}/cmake_test.txt")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Dep exists: $(Test-Path -PathType Container -Path '${DEP_DIR_NATIVE}')\"; whoami"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; try { Set-Content -Path '${TEMP_FILE}' -Value 'test'; Write-Output 'Write succeeded: True' } catch { Write-Output 'Write succeeded: False'; Write-Output \"Error: $_\" }; Write-Output \"Windows exists: $(Test-Path -PathType Container -Path 'C:\\Windows')\"; whoami"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
 )
 string(STRIP "${ps_out}" ps_out)
 message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
-if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nDep exists: True\n")
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
+if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nWrite succeeded: True\n")
+  message(STATUS "Directory is accessible ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
+  # Clean up temp file
+  execute_process(COMMAND powershell -Command "Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue")
 else()
-  message(STATUS "Directory not detected")
-  # Bypass for known repos
-  if("${DEP_NAME}" STREQUAL "zstd" OR "${DEP_NAME}" STREQUAL "xerr")
-    message(STATUS "Bypassing population for ${DEP_NAME} as it is known to exist")
-    set(SHOULD_POPULATE FALSE)
-  endif()
+  message(STATUS "Directory not accessible, will populate ${DEP_NAME}")
 endif()
 
 
