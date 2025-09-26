@@ -114,10 +114,11 @@ message(WARNING "This is the temp file --- ${TEMP_FILE}")
 execute_process(  
  COMMAND powershell -Command "if (Test-Path -PathType Container -Path '$([System.IO.Path]::GetDirectoryName('${TEMP_FILE}'))') { exit 0 } else { exit 1 }"
   RESULT_VARIABLE ps_result
+  OUTPUT_VARIABLE ps_out
   OUTPUT_QUIET
   ERROR_QUIET
 )
-Message(STATUS "------------------------------>  ${ps_result} ")
+Message(STATUS "------------------------------>  ${ps_out}  -- ${ps_result} ")
 if(ps_result EQUAL 0)
   set(SHOULD_POPULATE FALSE)
   Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
