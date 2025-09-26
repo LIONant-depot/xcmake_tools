@@ -97,6 +97,7 @@ function(FetchAndPopulate REPO)
   
   # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
+  Message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
   if(EXISTS "${DEP_SOURCE_DIR}")
    ## if(EXISTS "${DEP_SOURCE_DIR}/.git")
    ## message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
