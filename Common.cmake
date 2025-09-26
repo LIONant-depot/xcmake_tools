@@ -126,7 +126,8 @@ function(FetchAndPopulate REPO)
    ##     endif()
    ##   endif()
    ## endif()
-   
+
+     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
      set(SHOULD_POPULATE FALSE)
   endif()
   
