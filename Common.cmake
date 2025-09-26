@@ -107,7 +107,7 @@ function(FetchAndPopulate REPO)
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 set(SHOULD_POPULATE TRUE)
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
-set(TEMP_FILE "${DEP_DIR_NATIVE}\cmake_test.txt")
+set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test.txt")
 
 message(WARNING "This is the temp file --- ${TEMP_FILE}")
 
