@@ -111,26 +111,18 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
-
-# Check if the repository already exists
-set(SHOULD_POPULATE TRUE)
-message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
 execute_process(
-  COMMAND cmd /C md "${path_for_batch}"
-  RESULT_VARIABLE md_result
+  COMMAND cmd /C dir /a:d "${path_for_batch}" >nul 2>nul
+  RESULT_VARIABLE dir_result
   OUTPUT_QUIET
   ERROR_QUIET
 )
-if(md_result EQUAL 0)
-  # Created, so didn't exist; delete and populate
-  execute_process(COMMAND cmd /C rmdir /Q "${path_for_batch}")
-  message(STATUS "Directory created then deleted; will populate")
-else()
-  # Failed to create, so exists; don't populate
+if(dir_result EQUAL 0)
   set(SHOULD_POPULATE FALSE)
-  message(STATUS "Directory exists (md failed)")
+  message(STATUS "Directory exists")
+else()
+  message(STATUS "Directory does not exist; will populate")
 endif()
 
 
