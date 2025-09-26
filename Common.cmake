@@ -109,19 +109,19 @@ set(SHOULD_POPULATE TRUE)
 
 
 
-cmake_path(CONVERT "${DEP_SOURCE_DIR}" TO_NATIVE_PATH_LIST DEP_SOURCE_DIR_WIN NORMALIZE)
-message(STATUS "Native path for Git: ${DEP_SOURCE_DIR_WIN}")
 execute_process(
-  COMMAND "${GIT_EXECUTABLE}" -C "${DEP_SOURCE_DIR_WIN}" rev-parse --is-inside-work-tree
+  COMMAND "${GIT_EXECUTABLE}" -C "\"${DEP_SOURCE_DIR_WIN}\"" rev-parse --is-inside-work-tree
   RESULT_VARIABLE git_result
   OUTPUT_VARIABLE git_out
   ERROR_VARIABLE git_err
 )
 message(STATUS "Git result: ${git_result}, Out: ${git_out}, Err: ${git_err}")
-if(git_result EQUAL 0)
+if(git_result EQUAL 0 AND "${git_out}" STREQUAL "true\n")
   message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
+
+
 
 
 message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
