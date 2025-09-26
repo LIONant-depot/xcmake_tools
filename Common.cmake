@@ -105,6 +105,9 @@ function(FetchAndPopulate REPO)
 
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
+set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
+
+
 
 
 
@@ -113,9 +116,9 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
+string(REPLACE "/" "\\" DEP_SOURCE_DIR_WIN "${DEP_SOURCE_DIR}")
 execute_process(
-  COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+  COMMAND cmd /C "cd /D \"${DEP_SOURCE_DIR_WIN}\" & \"${GIT_EXECUTABLE}\" rev-parse --abbrev-ref HEAD"
   RESULT_VARIABLE GIT_RESULT
   OUTPUT_VARIABLE CURRENT_BRANCH
   OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -125,6 +128,9 @@ if(GIT_RESULT EQUAL 0)
   message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
+
+
+
 
 
 
