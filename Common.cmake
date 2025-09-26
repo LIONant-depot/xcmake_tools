@@ -109,17 +109,19 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
+
+
+
+
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
-file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_NATIVE)
-message(STATUS "Native path: ${DEP_NATIVE}")
-get_filename_component(PARENT_DIR "${DEP_NATIVE}" DIRECTORY)
-message(STATUS "Parent dir: ${PARENT_DIR}")
+file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
+message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
 execute_process(
-  COMMAND powershell -Command "Test-Path -PathType Container -Path \"${DEP_NATIVE}\""
+  COMMAND powershell -Command "Test-Path -PathType Container -Path \"${GIT_DIR_NATIVE}\""
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
@@ -127,11 +129,15 @@ execute_process(
 string(STRIP "${ps_out}" ps_out)
 message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
 if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
+  message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 else()
-  message(STATUS "Directory not detected")
+  message(STATUS "Git directory not detected")
 endif()
+
+
+
+
 
 
 
