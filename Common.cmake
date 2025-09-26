@@ -114,24 +114,26 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
-string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
-file(WRITE "${CMAKE_BINARY_DIR}/${DEP_NAME}.bat" 
-    "@echo off\n"
-    "echo Checking path: ${path_for_batch}\n"
-    "dir /a:d \"${path_for_batch}\" >nul 2>&1\n"
-    "if %ERRORLEVEL%==0 (echo exists) else (echo not && dir /a:d \"${path_for_batch}\" 2>&1)")
-execute_process(
-  COMMAND cmd /C "${CMAKE_BINARY_DIR}/${DEP_NAME}.bat"
-  RESULT_VARIABLE dir_result
-  OUTPUT_VARIABLE dir_out
-  ERROR_VARIABLE dir_err
-)
-string(STRIP "${dir_out}" dir_out)
-message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
-if("${dir_out}" MATCHES "exists")
+file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_NATIVE)
+message(STATUS "Native path: ${DEP_NATIVE}")
+# Get parent directory
+get_filename_component(PARENT_DIR "${DEP_NATIVE}" DIRECTORY)
+message(STATUS "Parent dir: ${PARENT_DIR}")
+# List all directories in parent
+file(GLOB dir_contents "${PARENT_DIR}/*" LIST_DIRECTORIES true)
+message(STATUS "Parent contents: ${dir_contents}")
+# Check if DEP_NATIVE is in the list
+list(FIND dir_contents "${DEP_NATIVE}" dir_index)
+if(dir_index GREATER -1)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
+else()
+  message(STATUS "Directory not found in parent contents")
 endif()
+
+
+
+
 
 message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
