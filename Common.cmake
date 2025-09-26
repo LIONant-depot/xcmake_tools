@@ -118,23 +118,19 @@ file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_NATIVE)
 message(STATUS "Native path: ${DEP_NATIVE}")
 get_filename_component(PARENT_DIR "${DEP_NATIVE}" DIRECTORY)
 message(STATUS "Parent dir: ${PARENT_DIR}")
-# Check parent accessibility
 execute_process(
-  COMMAND dir "${PARENT_DIR}"
-  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-  RESULT_VARIABLE parent_access_result
-  OUTPUT_VARIABLE parent_access_out
-  ERROR_VARIABLE parent_access_err
+  COMMAND powershell -Command "Test-Path -PathType Container -Path \"${DEP_NATIVE}\""
+  RESULT_VARIABLE ps_result
+  OUTPUT_VARIABLE ps_out
+  ERROR_VARIABLE ps_err
 )
-message(STATUS "Parent access result: ${parent_access_result}, Out: ${parent_access_out}, Err: ${parent_access_err}")
-file(GLOB dir_contents "${PARENT_DIR}/*" LIST_DIRECTORIES true)
-message(STATUS "Parent contents: ${dir_contents}")
-list(FIND dir_contents "${DEP_NATIVE}" dir_index)
-if(dir_index GREATER -1)
+string(STRIP "${ps_out}" ps_out)
+message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
+if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 else()
-  message(STATUS "Directory not found in parent contents")
+  message(STATUS "Directory not detected")
 endif()
 
 
