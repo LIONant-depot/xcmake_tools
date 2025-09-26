@@ -108,6 +108,9 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 set(SHOULD_POPULATE TRUE)
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 set(TEMP_FILE "${DEP_DIR_NATIVE}/cmake_test.txt")
+
+message(WARNING "This is the temp file --- ${TEMP_FILE}")
+
 execute_process(
   COMMAND powershell -Command "try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Write-Output 'True'; Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue } else { Write-Output 'False' } } catch { Write-Output 'False' }"
   RESULT_VARIABLE ps_result
