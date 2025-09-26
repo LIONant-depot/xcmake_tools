@@ -107,12 +107,12 @@ function(FetchAndPopulate REPO)
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 set(SHOULD_POPULATE TRUE)
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
-set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test.txt")
+set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test_deleteme.txt")
 
 message(WARNING "This is the temp file --- ${TEMP_FILE}")
 
 execute_process(
-  COMMAND powershell -Command "try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Write-Output 'True'; Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue } else { Write-Output 'False' } } catch { Write-Output 'False' }"
+  COMMAND powershell -Command "try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue; exit 0 } else { exit 1 } } catch { exit 1 }"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_QUIET
@@ -123,6 +123,10 @@ if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
   set(SHOULD_POPULATE FALSE)
   Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
 endif()
+
+# make sure it is really gone
+file(REMOVE "${TEMP_FILE}")
+
 
 ##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
 ##    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
