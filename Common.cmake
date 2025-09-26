@@ -110,12 +110,10 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-file(TO_CMAKE_PATH "${DEP_SOURCE_DIR}" DEP_SOURCE_DIR_CMAKE)
-set(DEP_SOURCE_DIR_NORM "${DEP_SOURCE_DIR_CMAKE}")
-cmake_path(NORMALIZE DEP_SOURCE_DIR_NORM)
-message(STATUS "Normalized: ${DEP_SOURCE_DIR_NORM}")
-if (EXISTS "${DEP_SOURCE_DIR_NORM}" AND IS_DIRECTORY "${DEP_SOURCE_DIR_NORM}")
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR_NORM}")
+
+message(STATUS "Normalized: ${DEP_SOURCE_DIR}")
+if (EXISTS "${DEP_SOURCE_DIR}" AND IS_DIRECTORY "${DEP_SOURCE_DIR}")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
 
