@@ -111,7 +111,6 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 # Check if the repository already exists
@@ -119,10 +118,10 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
 message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
-file(TO_NATIVE_PATH "D:/" ROOT_DIR_NATIVE)
-message(STATUS "Root dir: ${ROOT_DIR_NATIVE}")
+file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
+message(STATUS "Dep dir: ${DEP_DIR_NATIVE}")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Root exists: $(Test-Path -PathType Container -Path '${ROOT_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Parent contents: $((Get-ChildItem -Directory -Path (Split-Path '${GIT_DIR_NATIVE}' -Parent) | ForEach-Object { $_.FullName }) -join ',')\"; whoami"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Dep exists: $(Test-Path -PathType Container -Path '${DEP_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Permissions: $((Get-Acl -Path '${DEP_DIR_NATIVE}' | Select-Object -ExpandProperty Access | ForEach-Object { $_.IdentityReference.Value + ':' + $_.FileSystemRights }) -join ',')\"; whoami"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
@@ -140,7 +139,6 @@ else()
     set(SHOULD_POPULATE FALSE)
   endif()
 endif()
-
 
 
 
