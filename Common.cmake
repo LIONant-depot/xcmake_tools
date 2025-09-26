@@ -99,6 +99,9 @@ function(FetchAndPopulate REPO)
   set(SHOULD_POPULATE TRUE)
   Message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
   if(EXISTS "${DEP_SOURCE_DIR}")
+    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
+    set(SHOULD_POPULATE FALSE)
+
    ## if(EXISTS "${DEP_SOURCE_DIR}/.git")
    ## message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
    ## execute_process(
@@ -128,9 +131,6 @@ function(FetchAndPopulate REPO)
    ##     endif()
    ##   endif()
    ## endif()
-
-     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
-     set(SHOULD_POPULATE FALSE)
   endif()
   
   FetchContent_Declare(
