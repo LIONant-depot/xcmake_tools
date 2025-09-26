@@ -108,15 +108,20 @@ set(SHOULD_POPULATE TRUE)
 
 
 
+set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
+# Check if the repository already exists
+set(SHOULD_POPULATE TRUE)
+message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 execute_process(
-  COMMAND "${GIT_EXECUTABLE}" -C "\"${DEP_SOURCE_DIR_WIN}\"" rev-parse --is-inside-work-tree
-  RESULT_VARIABLE git_result
-  OUTPUT_VARIABLE git_out
-  ERROR_VARIABLE git_err
+  COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+  RESULT_VARIABLE GIT_RESULT
+  OUTPUT_VARIABLE CURRENT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET
 )
-message(STATUS "Git result: ${git_result}, Out: ${git_out}, Err: ${git_err}")
-if(git_result EQUAL 0 AND "${git_out}" STREQUAL "true\n")
+if(GIT_RESULT EQUAL 0)
   message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
