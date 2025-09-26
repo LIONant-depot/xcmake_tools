@@ -112,7 +112,6 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 # Check if the repository already exists
@@ -120,21 +119,30 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
 message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
-get_filename_component(PARENT_DIR "${DEP_SOURCE_DIR}" DIRECTORY)
-file(TO_NATIVE_PATH "${PARENT_DIR}" PARENT_DIR_NATIVE)
-message(STATUS "Parent dir: ${PARENT_DIR_NATIVE}")
-execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Parent exists: $(Test-Path -PathType Container -Path '${PARENT_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Windows exists: $(Test-Path -PathType Container -Path 'C:\\Windows')\"; whoami"
-  RESULT_VARIABLE ps_result
-  OUTPUT_VARIABLE ps_out
-  ERROR_VARIABLE ps_err
-)
-string(STRIP "${ps_out}" ps_out)
-message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
-if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nGit dir exists: True\n")
-  message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
-  set(SHOULD_POPULATE FALSE)
-else()
+file(TO_NATIVE_PATH "D:/LIONant/xGPU" ROOT_DIR_NATIVE)
+message(STATUS "Root dir: ${ROOT_DIR_NATIVE}")
+set(retries 3)
+set(found_dir FALSE)
+while(retries GREATER 0 AND NOT found_dir)
+  execute_process(
+    COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Root exists: $(Test-Path -PathType Container -Path '${ROOT_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; whoami"
+    RESULT_VARIABLE ps_result
+    OUTPUT_VARIABLE ps_out
+    ERROR_VARIABLE ps_err
+  )
+  string(STRIP "${ps_out}" ps_out)
+  message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
+  if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nGit dir exists: True\n")
+    set(found_dir TRUE)
+    message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
+    set(SHOULD_POPULATE FALSE)
+  endif()
+  math(EXPR retries "${retries} - 1")
+  if(NOT found_dir AND retries GREATER 0)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 1)
+  endif()
+endwhile()
+if(NOT found_dir)
   message(STATUS "Git directory not detected")
 endif()
 
