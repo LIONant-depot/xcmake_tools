@@ -117,7 +117,8 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 
-file(WRITE "${CMAKE_BINARY_DIR}/check_dir.bat" "@echo off\nif exist \"${DEP_SOURCE_DIR}\\nul\" (echo exists) else (echo not)")
+string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
+file(WRITE "${CMAKE_BINARY_DIR}/check_dir.bat" "@echo off\nif exist \"${path_for_batch}" (echo exists) else (echo not)")
 
 execute_process(
   COMMAND cmd /C "${CMAKE_BINARY_DIR}/check_dir.bat"
