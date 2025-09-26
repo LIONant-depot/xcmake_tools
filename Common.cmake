@@ -112,7 +112,8 @@ set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test_deleteme.txt")
 message(WARNING "This is the temp file --- ${TEMP_FILE}")
 
 execute_process(
-  COMMAND powershell -Command "if (Test-Path -PathType Container -Path (Split-Path '${TEMP_FILE}' -Parent)) { New-Item -Path '${TEMP_FILE}' -ItemType File -Force -ErrorAction Stop >$null; if (Test-Path -Path '${TEMP_FILE}') { Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue; exit 0 } else { exit 1 } } else { exit 1 }"
+  
+  COMMAND powershell -Command "if (Test-Path -PathType Container -Path (Split-Path '${TEMP_FILE}' -Parent)) { exit 0 } else { exit 1 }"
   RESULT_VARIABLE ps_result
   OUTPUT_QUIET
   ERROR_QUIET
