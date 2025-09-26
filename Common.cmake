@@ -110,9 +110,10 @@ file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 
 file(MAKE_DIRECTORY "${DEP_DIR_NATIVE}\\cmake_test_dir")
 if(EXISTS "${DEP_DIR_NATIVE}\\cmake_test_dir" AND IS_DIRECTORY "${DEP_DIR_NATIVE}\\cmake_test_dir")
-  file(REMOVE_RECURSIVE "${DEP_DIR_NATIVE}\\cmake_test_dir")
+  file(REMOVE "${DEP_DIR_NATIVE}\\cmake_test_dir")
   set(SHOULD_POPULATE FALSE)
 endif()
+
 
 ##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
 ##    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
