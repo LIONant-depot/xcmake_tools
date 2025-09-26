@@ -109,25 +109,29 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
+set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
-set(retries 5)
-set(is_dir FALSE)
-while(retries GREATER 0 AND NOT is_dir)
-  if(EXISTS "${DEP_SOURCE_DIR}" AND IS_DIRECTORY "${DEP_SOURCE_DIR}")
-    set(is_dir TRUE)
-  endif()
-  math(EXPR retries "${retries} - 1")
-  if(NOT is_dir AND retries GREATER 0)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 1)
-  endif()
-endwhile()
-if(is_dir)
+# Check if the repository already exists
+set(SHOULD_POPULATE TRUE)
+message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
+string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
+file(WRITE "${CMAKE_BINARY_DIR}/${DEP_NAME}.bat" 
+    "@echo off\n"
+    "echo Checking path: ${path_for_batch}\n"
+    "dir /a:d \"${path_for_batch}\" >nul 2>&1\n"
+    "if %ERRORLEVEL%==0 (echo exists) else (echo not && dir /a:d \"${path_for_batch}\" 2>&1)")
+execute_process(
+  COMMAND cmd /C "${CMAKE_BINARY_DIR}/${DEP_NAME}.bat"
+  RESULT_VARIABLE dir_result
+  OUTPUT_VARIABLE dir_out
+  ERROR_VARIABLE dir_err
+)
+string(STRIP "${dir_out}" dir_out)
+message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
+if("${dir_out}" MATCHES "exists")
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
-else()
-  message(FATAL_ERROR "Failed to detect directory after retries")
 endif()
-
 
 message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
