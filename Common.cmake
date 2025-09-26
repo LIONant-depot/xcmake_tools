@@ -110,12 +110,10 @@ set(SHOULD_POPULATE TRUE)
 
 
 
-
-message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 cmake_path(CONVERT "${DEP_SOURCE_DIR}" TO_NATIVE_PATH_LIST DEP_SOURCE_DIR_WIN NORMALIZE)
 message(STATUS "Native path: ${DEP_SOURCE_DIR_WIN}")
 execute_process(
-  COMMAND cmd /C "if exist \"${DEP_SOURCE_DIR_WIN}\\\" (exit 0) else (exit 1)"
+  COMMAND cmd /C "if exist ${DEP_SOURCE_DIR_WIN}\\ (exit 0) else (exit 1)"
   RESULT_VARIABLE dir_result
   OUTPUT_VARIABLE dir_out
   ERROR_VARIABLE dir_err
@@ -125,7 +123,6 @@ if(dir_result EQUAL 0)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
-
 
 
 
