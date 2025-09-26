@@ -102,6 +102,7 @@ function(FetchAndPopulate REPO)
      Message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   endif()
 
+string(REPLACE "/" "\\" DEP_SOURCE_DIR_WIN "${DEP_SOURCE_DIR}")
 execute_process(
   COMMAND cmd /C dir /AD "${DEP_SOURCE_DIR}"
   RESULT_VARIABLE dir_result
