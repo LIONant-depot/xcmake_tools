@@ -112,7 +112,7 @@ set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test_deleteme.txt")
 message(WARNING "This is the temp file --- ${DEP_SOURCE_DIR}")
 
 execute_process(
-  COMMAND powershell -Command "if (Test-Path -PathType Container -Path ([System.IO.Path]::GetFullPath('${DEP_DIR_NATIVE}'))) { exit 0 } else { exit 1 }"
+  COMMAND powershell -Command "if ([System.IO.Directory]::Exists('${DEP_DIR_NATIVE}')) { exit 0 } else { exit 1 }"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   OUTPUT_QUIET
