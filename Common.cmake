@@ -113,7 +113,7 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
 execute_process(
-  COMMAND cmd /C dir /a:d "${path_for_batch}" >nul 2>nul
+  COMMAND cmd /C dir /a:d "\"${path_for_batch}\"" >nul 2>nul
   RESULT_VARIABLE dir_result
   OUTPUT_QUIET
   ERROR_QUIET
