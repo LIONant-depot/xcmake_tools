@@ -112,7 +112,7 @@ set(SHOULD_POPULATE TRUE)
 cmake_path(CONVERT "${DEP_SOURCE_DIR}" TO_NATIVE_PATH_LIST DEP_SOURCE_DIR_WIN NORMALIZE)
 message(STATUS "Native path: ${DEP_SOURCE_DIR_WIN}")
 execute_process(
-  COMMAND cmd /C "if exist \"${DEP_SOURCE_DIR_WIN}\\\" (echo exists) else (echo not)"
+  COMMAND cmd /C "if exist \"${DEP_SOURCE_DIR_WIN}\" (echo exists) else (echo not)"
   RESULT_VARIABLE dir_result
   OUTPUT_VARIABLE dir_out
   ERROR_VARIABLE dir_err
