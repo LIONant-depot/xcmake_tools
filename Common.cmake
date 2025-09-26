@@ -94,12 +94,12 @@ function(FetchAndPopulate REPO)
   endif()
   
   set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
-  string(REPLACE "/" "\\\\" DEP_SOURCE_DIR_BACK "${DEP_SOURCE_DIR}")
-
+  
   # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
-  Message(STATUS "Checking if ${DEP_SOURCE_DIR_BACK} Exists or not!")
-  if(IS_DIRECTORY "${DEP_SOURCE_DIR_BACK}")
+  Message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
+  file(REAL_PATH "${DEP_SOURCE_DIR}" resolved_path)
+  if(IS_DIRECTORY "${resolved_path}")
      Message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   endif()
 
