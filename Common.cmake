@@ -98,34 +98,36 @@ function(FetchAndPopulate REPO)
   # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
   if(EXISTS "${DEP_SOURCE_DIR}/.git")
-    message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-      WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
-      RESULT_VARIABLE GIT_RESULT
-      OUTPUT_VARIABLE CURRENT_BRANCH
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-    )
-    if(GIT_RESULT EQUAL 0)
-      if("${CURRENT_BRANCH}" STREQUAL "${FP_TAG}" OR "${FP_TAG}" STREQUAL "master" OR "${FP_TAG}" STREQUAL "main")
-        set(SHOULD_POPULATE FALSE)
-        message(STATUS "Skipping fetch for ${DEP_NAME}: already at ${FP_TAG} or compatible branch")
-      else()
-        execute_process(
-          COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match
-          WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
-          RESULT_VARIABLE TAG_RESULT
-          OUTPUT_VARIABLE CURRENT_TAG
-          OUTPUT_STRIP_TRAILING_WHITESPACE
-          ERROR_QUIET
-        )
-        if(TAG_RESULT EQUAL 0 AND "${CURRENT_TAG}" STREQUAL "${FP_TAG}")
-          set(SHOULD_POPULATE FALSE)
-          message(STATUS "Skipping fetch for ${DEP_NAME}: tag ${FP_TAG} matches")
-        endif()
-      endif()
-    endif()
+   ## message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
+   ## execute_process(
+   ##   COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+   ##   WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+   ##   RESULT_VARIABLE GIT_RESULT
+   ##   OUTPUT_VARIABLE CURRENT_BRANCH
+   ##   OUTPUT_STRIP_TRAILING_WHITESPACE
+   ##   ERROR_QUIET
+   ## )
+   ## if(GIT_RESULT EQUAL 0)
+   ##   if("${CURRENT_BRANCH}" STREQUAL "${FP_TAG}" OR "${FP_TAG}" STREQUAL "master" OR "${FP_TAG}" STREQUAL "main")
+   ##     set(SHOULD_POPULATE FALSE)
+   ##     message(STATUS "Skipping fetch for ${DEP_NAME}: already at ${FP_TAG} or compatible branch")
+   ##   else()
+   ##     execute_process(
+   ##       COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match
+   ##       WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
+   ##       RESULT_VARIABLE TAG_RESULT
+   ##       OUTPUT_VARIABLE CURRENT_TAG
+   ##       OUTPUT_STRIP_TRAILING_WHITESPACE
+   ##       ERROR_QUIET
+   ##     )
+   ##     if(TAG_RESULT EQUAL 0 AND "${CURRENT_TAG}" STREQUAL "${FP_TAG}")
+   ##       set(SHOULD_POPULATE FALSE)
+   ##       message(STATUS "Skipping fetch for ${DEP_NAME}: tag ${FP_TAG} matches")
+   ##     endif()
+   ##   endif()
+   ## endif()
+   
+     set(SHOULD_POPULATE FALSE)
   endif()
   
   FetchContent_Declare(
