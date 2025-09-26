@@ -104,20 +104,20 @@ function(FetchAndPopulate REPO)
 
 string(REPLACE "/" "\\" DEP_SOURCE_DIR_WIN "${DEP_SOURCE_DIR}")
 execute_process(
-  COMMAND cmd /C dir /AD "${DEP_SOURCE_DIR}"
+  COMMAND cmd /C dir /AD "${DEP_SOURCE_DIR_WIN}"
   RESULT_VARIABLE dir_result
   OUTPUT_VARIABLE dir_out
   ERROR_VARIABLE dir_err
 )
 message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
 if(dir_result EQUAL 0)
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR_WIN}")
   set(SHOULD_POPULATE FALSE)
 endif()
 
 message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-  if(EXISTS "${DEP_SOURCE_DIR}/.git")
+  if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
     set(SHOULD_POPULATE FALSE)
 
