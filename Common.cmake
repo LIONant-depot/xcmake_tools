@@ -109,17 +109,14 @@ set(SHOULD_POPULATE TRUE)
 
 
 
-cmake_path(CONVERT "${DEP_SOURCE_DIR}" TO_NATIVE_PATH_LIST DEP_SOURCE_DIR_WIN NORMALIZE)
-message(STATUS "Native path: ${DEP_SOURCE_DIR_WIN}")
+string(REPLACE "/" "\\" DEP_SOURCE_DIR_WIN "${DEP_SOURCE_DIR}")
 execute_process(
-  COMMAND cmd /C "if exist \"${DEP_SOURCE_DIR_WIN}\" (echo exists) else (echo not)"
-  RESULT_VARIABLE dir_result
-  OUTPUT_VARIABLE dir_out
-  ERROR_VARIABLE dir_err
+  COMMAND "${GIT_EXECUTABLE}" -C "${DEP_SOURCE_DIR_WIN}" rev-parse --is-inside-work-tree
+  RESULT_VARIABLE git_result
+  OUTPUT_QUIET
+  ERROR_QUIET
 )
-string(STRIP "${dir_out}" dir_out)
-message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
-if("${dir_out}" STREQUAL "exists")
+if(git_result EQUAL 0)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
