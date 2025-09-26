@@ -105,9 +105,10 @@ function(FetchAndPopulate REPO)
 execute_process(
   COMMAND cmd /C dir /AD "${DEP_SOURCE_DIR}"
   RESULT_VARIABLE dir_result
-  OUTPUT_QUIET
-  ERROR_QUIET
+  OUTPUT_VARIABLE dir_out
+  ERROR_VARIABLE dir_err
 )
+message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
 if(dir_result EQUAL 0)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
