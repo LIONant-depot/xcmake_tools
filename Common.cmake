@@ -109,10 +109,11 @@ set(SHOULD_POPULATE TRUE)
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test_deleteme.txt")
 
-message(WARNING "This is the temp file --- ${TEMP_FILE}")
+message(WARNING "This is the temp file --- ${DEP_SOURCE_DIR}")
 
 execute_process(  
- COMMAND powershell -Command "if (Test-Path -PathType Container -Path '$([System.IO.Path]::GetDirectoryName('${TEMP_FILE}'))') { exit 0 } else { exit 1 }"
+execute_process(
+  COMMAND powershell -Command "if (Test-Path -PathType Container -Path ([System.IO.Path]::GetFullPath('${DEP_DIR_NATIVE}'))) { exit 0 } else { exit 1 }"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   OUTPUT_QUIET
@@ -124,8 +125,6 @@ if(ps_result EQUAL 0)
   Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
 endif()
 
-# make sure it is really gone
-file(REMOVE "${TEMP_FILE}")
 
 ##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
 ##    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
