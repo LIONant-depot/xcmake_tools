@@ -103,8 +103,9 @@ function(FetchAndPopulate REPO)
   endif()
 
 string(REPLACE "/" "\\" DEP_SOURCE_DIR_WIN "${DEP_SOURCE_DIR}")
+message(STATUS "The windows version ${DEP_SOURCE_DIR_WIN}")
 execute_process(
-  COMMAND cmd /C dir /AD "${DEP_SOURCE_DIR_WIN}"
+  COMMAND cmd /C if exist "${DEP_SOURCE_DIR_WIN}\\" (exit 0) else (exit 1)
   RESULT_VARIABLE dir_result
   OUTPUT_VARIABLE dir_out
   ERROR_VARIABLE dir_err
