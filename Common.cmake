@@ -118,10 +118,9 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 message(STATUS "Dep dir: ${DEP_DIR_NATIVE}")
-# Try writing a temp file to verify access
 set(TEMP_FILE "${DEP_DIR_NATIVE}/cmake_test.txt")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; try { Set-Content -Path '${TEMP_FILE}' -Value 'test'; Write-Output 'Write succeeded: True' } catch { Write-Output 'Write succeeded: False'; Write-Output \"Error: $_\" }; Write-Output \"Windows exists: $(Test-Path -PathType Container -Path 'C:\\Windows')\"; whoami"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Write-Output 'Write succeeded: True'; Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue } else { Write-Output 'Write succeeded: False' } } catch { Write-Output 'Write succeeded: False'; Write-Output \"Error: $_\" }; Write-Output \"Windows exists: $(Test-Path -PathType Container -Path 'C:\\Windows')\"; whoami"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
@@ -131,8 +130,6 @@ message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}"
 if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nWrite succeeded: True\n")
   message(STATUS "Directory is accessible ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
-  # Clean up temp file
-  execute_process(COMMAND powershell -Command "Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue")
 else()
   message(STATUS "Directory not accessible, will populate ${DEP_NAME}")
 endif()
