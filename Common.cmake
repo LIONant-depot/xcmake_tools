@@ -110,9 +110,10 @@ execute_process(
 )
 if(dir_result EQUAL 0)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
+  set(SHOULD_POPULATE FALSE)
 endif()
 
-
+message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
   if(EXISTS "${DEP_SOURCE_DIR}/.git")
     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
