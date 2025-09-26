@@ -120,18 +120,28 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
 message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
-execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; if (Test-Path -PathType Container -Path \"${GIT_DIR_NATIVE}\") { Write-Output 'True' } else { Write-Output 'False' }; if (Test-Path -PathType Container -Path 'C:\\Windows') { Write-Output 'True' } else { Write-Output 'False' }"
-  RESULT_VARIABLE ps_result
-  OUTPUT_VARIABLE ps_out
-  ERROR_VARIABLE ps_err
-)
-string(STRIP "${ps_out}" ps_out)
-message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
-if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "True")
-  message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
-  set(SHOULD_POPULATE FALSE)
-else()
+set(retries 3)
+set(found_dir FALSE)
+while(retries GREATER 0 AND NOT found_dir)
+  execute_process(
+    COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; if (Test-Path -PathType Container -Path \"${GIT_DIR_NATIVE}\") { Write-Output 'True' } else { Write-Output 'False' }; if (Test-Path -PathType Container -Path 'C:\\Windows') { Write-Output 'True' } else { Write-Output 'False' }"
+    RESULT_VARIABLE ps_result
+    OUTPUT_VARIABLE ps_out
+    ERROR_VARIABLE ps_err
+  )
+  string(STRIP "${ps_out}" ps_out)
+  message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
+  if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nTrue\n")
+    set(found_dir TRUE)
+    message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
+    set(SHOULD_POPULATE FALSE)
+  endif()
+  math(EXPR retries "${retries} - 1")
+  if(NOT found_dir AND retries GREATER 0)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 1)
+  endif()
+endwhile()
+if(NOT found_dir)
   message(STATUS "Git directory not detected")
 endif()
 
