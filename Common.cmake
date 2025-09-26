@@ -121,7 +121,7 @@ message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
 message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Test-Path -PathType Container -Path \"${GIT_DIR_NATIVE}\"; Test-Path -PathType Container -Path 'C:\Windows'"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; if (Test-Path -PathType Container -Path \"${GIT_DIR_NATIVE}\") { Write-Output 'True' } else { Write-Output 'False' }; if (Test-Path -PathType Container -Path 'C:\\Windows') { Write-Output 'True' } else { Write-Output 'False' }"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
