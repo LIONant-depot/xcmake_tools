@@ -121,6 +121,7 @@ string(STRIP "${ps_out}" ps_out)
 Message(STATUS "------------------------------> ${ps_out}")
 if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
   set(SHOULD_POPULATE FALSE)
+  Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
 endif()
 
 ##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
