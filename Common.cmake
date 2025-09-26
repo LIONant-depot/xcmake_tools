@@ -110,10 +110,10 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-
-message(STATUS "Normalized: ${DEP_SOURCE_DIR}")
-if (EXISTS "${DEP_SOURCE_DIR}" AND IS_DIRECTORY "${DEP_SOURCE_DIR}")
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
+string(REPLACE "/" "\\" DEP_SOURCE_DIR_NORM "${DEP_SOURCE_DIR}")
+message(STATUS "Normalized: ${DEP_SOURCE_DIR_NORM}")
+if (EXISTS "C:/Windows" AND IS_DIRECTORY "C:/Windows")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR_NORM}")
   set(SHOULD_POPULATE FALSE)
 endif()
 
