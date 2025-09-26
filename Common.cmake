@@ -104,47 +104,25 @@ function(FetchAndPopulate REPO)
 
 
 # Check if the repository already exists
-set(SHOULD_POPULATE TRUE)
 set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
-
-
-
-
-
-set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
-
-# Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
-message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
-message(STATUS "Dep dir: ${DEP_DIR_NATIVE}")
 set(TEMP_FILE "${DEP_DIR_NATIVE}/cmake_test.txt")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Write-Output 'Write succeeded: True'; Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue } else { Write-Output 'Write succeeded: False' } } catch { Write-Output 'Write succeeded: False'; Write-Output \"Error: $_\" }; Write-Output \"Windows exists: $(Test-Path -PathType Container -Path 'C:\\Windows')\"; whoami"
+  COMMAND powershell -Command "try { New-Item -Path '${TEMP_FILE}' -ItemType File -Force; if (Test-Path -Path '${TEMP_FILE}') { Write-Output 'True'; Remove-Item -Path '${TEMP_FILE}' -ErrorAction SilentlyContinue } else { Write-Output 'False' } } catch { Write-Output 'False' }"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
-  ERROR_VARIABLE ps_err
+  ERROR_QUIET
 )
 string(STRIP "${ps_out}" ps_out)
-message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
-if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nWrite succeeded: True\n")
-  message(STATUS "Directory is accessible ${DEP_SOURCE_DIR}")
+if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
   set(SHOULD_POPULATE FALSE)
-else()
-  message(STATUS "Directory not accessible, will populate ${DEP_NAME}")
 endif()
 
-
-
-
-
-
-message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-  if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
-    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
-    set(SHOULD_POPULATE FALSE)
-
+##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
+##    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
+##    set(SHOULD_POPULATE FALSE)
+##
    ## if(EXISTS "${DEP_SOURCE_DIR}/.git")
    ## message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
    ## execute_process(
@@ -174,7 +152,7 @@ message(STATUS "Hello!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
    ##     endif()
    ##   endif()
    ## endif()
-  endif()
+ ## endif()
   
   FetchContent_Declare(
     ${DEP_NAME}
