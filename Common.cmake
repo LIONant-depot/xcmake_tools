@@ -116,23 +116,21 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
-file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
-message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_DIR_NATIVE)
 message(STATUS "Dep dir: ${DEP_DIR_NATIVE}")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Dep exists: $(Test-Path -PathType Container -Path '${DEP_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Permissions: $((Get-Acl -Path '${DEP_DIR_NATIVE}' | Select-Object -ExpandProperty Access | ForEach-Object { $_.IdentityReference.Value + ':' + $_.FileSystemRights }) -join ',')\"; whoami"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Dep exists: $(Test-Path -PathType Container -Path '${DEP_DIR_NATIVE}')\"; whoami"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
 )
 string(STRIP "${ps_out}" ps_out)
 message(STATUS "PowerShell result: ${ps_result}, Out: ${ps_out}, Err: ${ps_err}")
-if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nGit dir exists: True\n")
-  message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
+if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nDep exists: True\n")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 else()
-  message(STATUS "Git directory not detected")
+  message(STATUS "Directory not detected")
   # Bypass for known repos
   if("${DEP_NAME}" STREQUAL "zstd" OR "${DEP_NAME}" STREQUAL "xerr")
     message(STATUS "Bypassing population for ${DEP_NAME} as it is known to exist")
