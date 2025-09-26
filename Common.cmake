@@ -118,7 +118,7 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 
 string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
-file(WRITE "${CMAKE_BINARY_DIR}/check_dir.bat" "@echo off\nif exist \"${path_for_batch}" (echo exists) else (echo not)")
+file(WRITE "${CMAKE_BINARY_DIR}/check_dir.bat" "@echo off\nif exist \"${path_for_batch}\" (echo exists) else (echo not)")
 
 execute_process(
   COMMAND cmd /C "${CMAKE_BINARY_DIR}/check_dir.bat"
