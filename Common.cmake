@@ -98,12 +98,11 @@ function(FetchAndPopulate REPO)
   # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
   Message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
-  file(REAL_PATH "${DEP_SOURCE_DIR}" resolved_path)
-  if(IS_DIRECTORY "${resolved_path}")
+  if(EXISTS "${DEP_SOURCE_DIR}/.git")
      Message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   endif()
 
-  if(EXISTS "${DEP_SOURCE_DIR}")
+  if(EXISTS "${DEP_SOURCE_DIR}/.git")
     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
     set(SHOULD_POPULATE FALSE)
 
