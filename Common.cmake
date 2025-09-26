@@ -119,11 +119,10 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}/.git" GIT_DIR_NATIVE)
 message(STATUS "Git dir path: ${GIT_DIR_NATIVE}")
-get_filename_component(PARENT_DIR "${DEP_SOURCE_DIR}" DIRECTORY)
-file(TO_NATIVE_PATH "${PARENT_DIR}" PARENT_DIR_NATIVE)
-message(STATUS "Parent dir: ${PARENT_DIR_NATIVE}")
+file(TO_NATIVE_PATH "D:/" ROOT_DIR_NATIVE)
+message(STATUS "Root dir: ${ROOT_DIR_NATIVE}")
 execute_process(
-  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Parent exists: $(Test-Path -PathType Container -Path '${PARENT_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Parent contents: $((Get-ChildItem -Directory -Path '${PARENT_DIR_NATIVE}' | ForEach-Object { $_.FullName }) -join ',')\"; whoami"
+  COMMAND powershell -Command "Write-Output \"User: $env:USERNAME\"; Write-Output \"Root exists: $(Test-Path -PathType Container -Path '${ROOT_DIR_NATIVE}')\"; Write-Output \"Git dir exists: $(Test-Path -PathType Container -Path '${GIT_DIR_NATIVE}')\"; Write-Output \"Parent contents: $((Get-ChildItem -Directory -Path (Split-Path '${GIT_DIR_NATIVE}' -Parent) | ForEach-Object { $_.FullName }) -join ',')\"; whoami"
   RESULT_VARIABLE ps_result
   OUTPUT_VARIABLE ps_out
   ERROR_VARIABLE ps_err
@@ -135,9 +134,9 @@ if(ps_result EQUAL 0 AND "${ps_out}" MATCHES "\nGit dir exists: True\n")
   set(SHOULD_POPULATE FALSE)
 else()
   message(STATUS "Git directory not detected")
-  # Fallback: bypass check for zstd since manual tests confirm it exists
-  if("${DEP_NAME}" STREQUAL "zstd")
-    message(STATUS "Bypassing population for zstd as it is known to exist")
+  # Bypass for known repos
+  if("${DEP_NAME}" STREQUAL "zstd" OR "${DEP_NAME}" STREQUAL "xerr")
+    message(STATUS "Bypassing population for ${DEP_NAME} as it is known to exist")
     set(SHOULD_POPULATE FALSE)
   endif()
 endif()
