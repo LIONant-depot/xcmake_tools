@@ -116,21 +116,21 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 # Check if the repository already exists
 set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
+
+file(WRITE "${CMAKE_BINARY_DIR}/check_dir.bat" "@echo off\nif exist \"${DEP_SOURCE_DIR}\\nul\" (echo exists) else (echo not)")
+
 execute_process(
-  COMMAND "${GIT_EXECUTABLE}" rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY "${DEP_SOURCE_DIR}"
-  RESULT_VARIABLE GIT_RESULT
-  OUTPUT_VARIABLE CURRENT_BRANCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  ERROR_VARIABLE GIT_ERR
+  COMMAND cmd /C "${CMAKE_BINARY_DIR}/check_dir.bat"
+  RESULT_VARIABLE dir_result
+  OUTPUT_VARIABLE dir_out
+  ERROR_VARIABLE dir_err
 )
-message(STATUS "Git result: ${GIT_RESULT}, Err: ${GIT_ERR}")
-if(GIT_RESULT EQUAL 0)
-  message(STATUS "This is in fact a directory and Git repo ${DEP_SOURCE_DIR}")
+string(STRIP "${dir_out}" dir_out)
+message(STATUS "Dir result: ${dir_result}, Out: ${dir_out}, Err: ${dir_err}")
+if("${dir_out}" STREQUAL "exists")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
 endif()
-
-
 
 
 
