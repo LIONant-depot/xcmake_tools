@@ -111,19 +111,11 @@ set(TEMP_FILE "${DEP_DIR_NATIVE}\\cmake_test_deleteme.txt")
 
 message(WARNING "This is the temp file --- ${DEP_SOURCE_DIR}")
 
-execute_process(
-  COMMAND cmd /C "if exist \"${DEP_DIR_NATIVE}\\nul\" (exit 0) else (exit 1)"
-  RESULT_VARIABLE ps_result
-  OUTPUT_VARIABLE ps_out
-  OUTPUT_QUIET
-  ERROR_QUIET
-)
-Message(STATUS "------------------------------>  ${ps_out}  -- ${ps_result} ")
-if(ps_result EQUAL 0)
+file(MAKE_DIRECTORY "${DEP_DIR_NATIVE}/cmake_test_dir")
+if(EXISTS "${DEP_DIR_NATIVE}/cmake_test_dir" AND IS_DIRECTORY "${DEP_DIR_NATIVE}/cmake_test_dir")
+  file(REMOVE_RECURSIVE "${DEP_DIR_NATIVE}/cmake_test_dir")
   set(SHOULD_POPULATE FALSE)
-  Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
 endif()
-
 
 ##   if(EXISTS "${DEP_SOURCE_DIR_WIN}\.git")
 ##    Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
