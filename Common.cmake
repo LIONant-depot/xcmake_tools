@@ -118,7 +118,7 @@ execute_process(
   ERROR_QUIET
 )
 string(STRIP "${ps_out}" ps_out)
-Message(STATUS "------------------------------> ${ps_out}")
+Message(STATUS "------------------------------> ${ps_out} AANNDD  ${ps_result} ")
 if(ps_result EQUAL 0 AND "${ps_out}" STREQUAL "True")
   set(SHOULD_POPULATE FALSE)
   Message(STATUS "------------------------------> SHOULD_POPULATE ${SHOULD_POPULATE}")
