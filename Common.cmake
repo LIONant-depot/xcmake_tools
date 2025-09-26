@@ -103,15 +103,6 @@ function(FetchAndPopulate REPO)
      Message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   endif()
 
-  set(retries 5)
-  while(retries GREATER 0 AND NOT IS_DIRECTORY "${DEP_SOURCE_DIR}")
-     math(EXPR retries "${retries} - 1")
-     execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 1)
-  endwhile()
-  if(NOT IS_DIRECTORY "${DEP_SOURCE_DIR}")
-     message(FATAL_ERROR "Failed to detect directory after retries")
-  endif()
-
   if(EXISTS "${DEP_SOURCE_DIR}")
     Message(STATUS "Skipping fetch for ${DEP_NAME}: Directory found!")
     set(SHOULD_POPULATE FALSE)
@@ -155,8 +146,7 @@ function(FetchAndPopulate REPO)
     GIT_SUBMODULES_RECURSE TRUE
     GIT_CLONE_FLAGS "--jobs=8"
     SOURCE_DIR "${DEP_SOURCE_DIR}"
-  )
-  
+  ) 
   FetchContent_GetProperties(${DEP_NAME})
   if(NOT ${DEP_NAME}_POPULATED AND SHOULD_POPULATE)
     message(STATUS "Populating ${DEP_NAME} from ${REPO} with tag ${FP_TAG}...")
