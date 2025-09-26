@@ -97,7 +97,8 @@ function(FetchAndPopulate REPO)
   
   # Check if the repository already exists
   set(SHOULD_POPULATE TRUE)
-  if(EXISTS "${DEP_SOURCE_DIR}/.git")
+  if(EXISTS "${DEP_SOURCE_DIR}")
+   ## if(EXISTS "${DEP_SOURCE_DIR}/.git")
    ## message(STATUS "Found existing ${DEP_NAME} at ${DEP_SOURCE_DIR}. Checking tag...")
    ## execute_process(
    ##   COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
