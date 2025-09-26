@@ -110,19 +110,15 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
+# Normalize to CMake-style path
+file(TO_CMAKE_PATH "${DEP_SOURCE_DIR}" DEP_SOURCE_DIR_CMAKE)
+cmake_path(NORMALIZE "${DEP_SOURCE_DIR_CMAKE}" OUTPUT_VARIABLE DEP_SOURCE_DIR_NORM)
 
-string(REPLACE "/" "\\" path_for_batch "${DEP_SOURCE_DIR}")
-execute_process(
-  COMMAND cmd /C dir /a:d "\"${path_for_batch}\"" >nul 2>nul
-  RESULT_VARIABLE dir_result
-  OUTPUT_QUIET
-  ERROR_QUIET
-)
-if(dir_result EQUAL 0)
+message(STATUS "Normalized: ${DEP_SOURCE_DIR_NORM}")
+
+if (EXISTS "${DEP_SOURCE_DIR_NORM}" AND IS_DIRECTORY "${DEP_SOURCE_DIR_NORM}")
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR_NORM}")
   set(SHOULD_POPULATE FALSE)
-  message(STATUS "Directory exists")
-else()
-  message(STATUS "Directory does not exist; will populate")
 endif()
 
 
