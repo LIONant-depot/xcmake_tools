@@ -110,11 +110,22 @@ set(DEP_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}")
 
 
 
-string(REPLACE "/" "\\" DEP_SOURCE_DIR_NORM "${DEP_SOURCE_DIR}")
-message(STATUS "Normalized: ${DEP_SOURCE_DIR_NORM}")
-if (EXISTS "C:/Windows" AND IS_DIRECTORY "C:/Windows")
-  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR_NORM}")
+set(retries 5)
+set(is_dir FALSE)
+while(retries GREATER 0 AND NOT is_dir)
+  if(EXISTS "${DEP_SOURCE_DIR}" AND IS_DIRECTORY "${DEP_SOURCE_DIR}")
+    set(is_dir TRUE)
+  endif()
+  math(EXPR retries "${retries} - 1")
+  if(NOT is_dir AND retries GREATER 0)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E sleep 1)
+  endif()
+endwhile()
+if(is_dir)
+  message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
   set(SHOULD_POPULATE FALSE)
+else()
+  message(FATAL_ERROR "Failed to detect directory after retries")
 endif()
 
 
