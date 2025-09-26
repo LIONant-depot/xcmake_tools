@@ -116,13 +116,19 @@ set(SHOULD_POPULATE TRUE)
 message(STATUS "Checking if ${DEP_SOURCE_DIR} Exists or not!")
 file(TO_NATIVE_PATH "${DEP_SOURCE_DIR}" DEP_NATIVE)
 message(STATUS "Native path: ${DEP_NATIVE}")
-# Get parent directory
 get_filename_component(PARENT_DIR "${DEP_NATIVE}" DIRECTORY)
 message(STATUS "Parent dir: ${PARENT_DIR}")
-# List all directories in parent
+# Check parent accessibility
+execute_process(
+  COMMAND dir "${PARENT_DIR}"
+  WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+  RESULT_VARIABLE parent_access_result
+  OUTPUT_VARIABLE parent_access_out
+  ERROR_VARIABLE parent_access_err
+)
+message(STATUS "Parent access result: ${parent_access_result}, Out: ${parent_access_out}, Err: ${parent_access_err}")
 file(GLOB dir_contents "${PARENT_DIR}/*" LIST_DIRECTORIES true)
 message(STATUS "Parent contents: ${dir_contents}")
-# Check if DEP_NATIVE is in the list
 list(FIND dir_contents "${DEP_NATIVE}" dir_index)
 if(dir_index GREATER -1)
   message(STATUS "This is in fact a directory ${DEP_SOURCE_DIR}")
@@ -130,8 +136,6 @@ if(dir_index GREATER -1)
 else()
   message(STATUS "Directory not found in parent contents")
 endif()
-
-
 
 
 
