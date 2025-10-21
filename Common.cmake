@@ -134,8 +134,10 @@ function(FetchAndPopulate REPO)
       endif()
     endif()
   endif()
-  
+
   set(FETCHCONTENT_QUIET FALSE)
+  set_property(GLOBAL PROPERTY USES_TERMINAL_DOWNLOAD TRUE)
+  
   FetchContent_Declare(
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
