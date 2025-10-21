@@ -142,6 +142,7 @@ function(FetchAndPopulate REPO)
     GIT_SHALLOW TRUE
     GIT_SUBMODULES_RECURSE TRUE
     GIT_CLONE_FLAGS "--jobs=8"
+    GIT_PROGRESS TRUE
     SOURCE_DIR "${DEP_SOURCE_DIR}"
   ) 
   FetchContent_GetProperties(${DEP_NAME})
