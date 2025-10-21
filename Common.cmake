@@ -134,7 +134,8 @@ function(FetchAndPopulate REPO)
       endif()
     endif()
   endif()
-
+  
+  set(FETCHCONTENT_QUIET FALSE)
   FetchContent_Declare(
     ${DEP_NAME}
     GIT_REPOSITORY ${REPO}
