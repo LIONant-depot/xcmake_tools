@@ -200,12 +200,16 @@ function(FetchAndPopulate REPO)
   FetchContent_GetProperties(${DEP_NAME})
   if(NOT ${DEP_NAME}_POPULATED AND SHOULD_POPULATE)
     message(STATUS "Populating ${DEP_NAME} from ${REPO} with tag ${FP_TAG}...")
-    FetchContent_Populate(${DEP_NAME})
-    set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
-    # Case-sensitive file systems (Linux): several depots use "Build/dependency" - Windows finds either.
-    if(NOT EXISTS "${SUBDIR}/CMakeLists.txt" AND EXISTS "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/Build/dependency/CMakeLists.txt")
-      set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/Build/dependency")
+    # A dependency that is not there yet is always downloaded: FETCHCONTENT_FULLY_DISCONNECTED (an offline re-configure) only means "reuse what is
+    # already populated" - with it ON, FetchContent_Populate did nothing at all and the build failed much later (a missing header or library).
+    if(NOT EXISTS "${DEP_SOURCE_DIR}/.git")
+      set(FETCHCONTENT_FULLY_DISCONNECTED OFF)
     endif()
+    FetchContent_Populate(${DEP_NAME})
+    if(NOT EXISTS "${DEP_SOURCE_DIR}/.git")
+      message(FATAL_ERROR "Could not fetch ${DEP_NAME} (${REPO}, tag ${FP_TAG}) into ${DEP_SOURCE_DIR}")
+    endif()
+    set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/build/dependency")
     # Case-sensitive file systems (Linux): several depots use "Build/dependency" - Windows finds either.
     if(NOT EXISTS "${SUBDIR}/CMakeLists.txt" AND EXISTS "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/Build/dependency/CMakeLists.txt")
       set(SUBDIR "${CMAKE_SOURCE_DIR}/dependencies/${DEP_NAME}/Build/dependency")
