@@ -95,6 +95,11 @@ function(FetchAndPopulate REPO)
   
   # Pinned dependencies: when XCMAKE_PINS_FILE names a file of lines "<dependency name> <git url> <40 hex commit>" and this dependency is in it, that commit is used whatever tag was asked for.
   # One list for every platform and every caller (the third party libraries move only when someone changes their line).
+  # The CMake variable wins; else the environment variable of the same name - how a parent build (xLION running Install.bat) reaches the
+  # plugin builds it starts, which never see its CMake variables (E60: a fresh setup built basis_universal master, broken since 2026-10-30).
+  if(NOT XCMAKE_PINS_FILE AND DEFINED ENV{XCMAKE_PINS_FILE})
+    set(XCMAKE_PINS_FILE "$ENV{XCMAKE_PINS_FILE}")
+  endif()
   if(XCMAKE_PINS_FILE AND EXISTS "${XCMAKE_PINS_FILE}")
     file(STRINGS "${XCMAKE_PINS_FILE}" FP_PIN_LINES)
     foreach(FP_LINE IN LISTS FP_PIN_LINES)
